@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0d0d0d">
+<title>ベガ観戦のお供</title>
+<style>
+:root{
+  --bg:#0d0d0d;--panel:#1b1b1b;--line:#333;--text:#f4f1e8;--sub:#9a968a;
+  --accent:#f5c400;--on-accent:#111;--pitch1:#1f5a2c;--pitch2:#256b34;--pitchline:rgba(255,255,255,.55);
+}
+[data-mode="away"]{
+  --bg:#f3f1ea;--panel:#fff;--line:#d8d4c6;--text:#16160f;--sub:#6d6a5e;
+  --accent:#16160f;--on-accent:#f5c400;--pitch1:#2a7a3c;--pitch2:#318a45;
+}
+[data-mode="dazn"]{
+  --bg:#050505;--panel:#141414;--line:#2a2a2a;--text:#f2f2f2;--sub:#8a8a8a;
+  --accent:#e6ff2e;--on-accent:#050505;--pitch1:#14301b;--pitch2:#183a21;--pitchline:rgba(255,255,255,.4);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Hiragino Sans",sans-serif;
+  -webkit-text-size-adjust:100%;overscroll-behavior:none}
+button,select,input{font:inherit;color:inherit}
+body{padding:env(safe-area-inset-top) 0 calc(64px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 14px 8px;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{font-size:17px;margin:0;letter-spacing:.04em}
+h1 b{color:var(--accent)}
+.season{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.modes button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 0;font-size:13px;font-weight:600}
+.modes button[aria-pressed=true]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+main{padding:12px 14px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:grid;grid-template-columns:1fr 1fr;
+  background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{background:none;border:0;padding:14px 0;font-size:14px;font-weight:700;color:var(--sub)}
+nav.tabs button[aria-selected=true]{color:var(--accent)}
+.search{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px;margin-bottom:10px}
+.group h2{font-size:12px;letter-spacing:.12em;color:var(--sub);margin:16px 0 6px}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel);
+  border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px}
+.no{min-width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  display:grid;place-items:center;font-weight:800;font-size:15px;flex:none}
+.row .nm{font-size:16px;font-weight:600}
+.row .en{font-size:11px;color:var(--sub);margin-top:2px}
+.loan{margin-left:auto;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.btn{background:var(--accent);color:var(--on-accent);border:0;border-radius:10px;padding:11px 16px;font-weight:700}
+.btn.ghost{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:none;color:#e5484d;border:1px solid #e5484d}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.bar>*{flex:1}
+/* lineup */
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.meta input,.meta select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px;width:100%}
+.pitch{position:relative;width:100%;aspect-ratio:3/4;border-radius:14px;overflow:hidden;border:2px solid var(--pitchline);
+  background:repeating-linear-gradient(0deg,var(--pitch1) 0 12.5%,var(--pitch2) 12.5% 25%)}
+.pitch::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:2px solid var(--pitchline)}
+.pitch::after{content:"";position:absolute;left:50%;top:50%;width:26%;aspect-ratio:1;border:2px solid var(--pitchline);border-radius:50%;transform:translate(-50%,-50%)}
+.box{position:absolute;left:25%;width:50%;border:2px solid var(--pitchline)}
+.box.t{top:0;height:15%;border-top:0}.box.b{bottom:0;height:15%;border-bottom:0}
+.slot{position:absolute;transform:translate(-50%,-50%);z-index:2;background:none;border:0;padding:0;width:19%;text-align:center}
+.slot .c{width:min(11.5vw,48px);aspect-ratio:1;margin:0 auto;border-radius:50%;display:grid;place-items:center;
+  font-weight:800;font-size:15px;background:var(--accent);color:var(--on-accent);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.slot.empty .c{background:rgba(0,0,0,.35);color:#fff;border-style:dashed;font-size:11px;font-weight:600}
+.slot .n{margin-top:3px;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bench{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bench button{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 4px;font-size:12px;min-height:54px;
+  display:flex;flex-direction:column;align-items:center;gap:2px}
+.bench button b{font-size:15px;color:var(--accent)}
+.bench button.empty{color:var(--sub);border-style:dashed;justify-content:center}
+h3{font-size:12px;letter-spacing:.12em;color:var(--sub);margin:18px 0 8px}
+/* sheet */
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:none}
+.veil.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:18px 18px 0 0;
+  max-height:82vh;overflow:auto;padding:16px 14px calc(18px + env(safe-area-inset-bottom));display:none;border-top:1px solid var(--line)}
+.sheet.on{display:block}
+.sheet h2{font-size:16px;margin:0 0 12px}
+.field{display:block;margin-bottom:10px}
+.field span{display:block;font-size:12px;color:var(--sub);margin-bottom:4px}
+.field input,.field select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px}
+.note{font-size:12px;color:var(--sub);line-height:1.6}
+.empty-msg{color:var(--sub);text-align:center;padding:30px 0}
+</style>
+</head>
+<body data-mode="home">
+<header>
+  <div class="top">
+    <h1><b>VEGALTA</b> 観戦のお供</h1>
+    <button class="season" id="seasonBtn"></button>
+  </div>
+  <div class="modes" id="modes">
+    <button data-m="home">ホーム</button>
+    <button data-m="away">アウェイ</button>
+    <button data-m="dazn">DAZN</button>
+  </div>
+</header>
+<main id="main"></main>
+<nav class="tabs" id="tabs" role="tablist">
+  <button data-t="roster" role="tab">選手名鑑</button>
+  <button data-t="lineup" role="tab">スタメン</button>
+</nav>
+<div class="veil" id="veil"></div>
+<div class="sheet" id="sheet"></div>
+
+<script>
+// ---- 初期データ：クラブ公式サイト トップチーム（2026/27）より ----
+// [背番号, 名前, 表示名, ポジション]
+const SEED_2026 = [
+ [1,"堀田 大暉","堀田","GK"],[2,"五十嵐 聖己","五十嵐","DF"],[3,"奥山 政幸","奥山","DF"],[4,"湯谷 杏吏","湯谷","MF"],
+ [5,"菅田 真啓","菅田","DF"],[6,"松井 蓮之","松井","MF"],[7,"中島 元彦","中島","FW"],[8,"武田 英寿","武田","MF"],
+ [9,"宮崎 鴻","宮崎","FW"],[10,"鎌田 大夢","鎌田","MF"],[11,"小林 心","小林","FW"],[14,"相良 竜之介","相良","MF"],
+ [15,"南 創太","南","MF"],[17,"工藤 蒼生","工藤","MF"],[18,"梅木 翼","梅木","FW"],[19,"マテウス モラエス","モラエス","DF"],
+ [20,"中田 有祐","中田","FW"],[22,"髙田 椋汰","髙田","DF"],[23,"有田 恵人","有田","MF"],[24,"永井 大義","永井","DF"],
+ [26,"横山 颯大","横山","MF"],[27,"岩渕 弘人","岩渕","MF"],[29,"松澤 香輝","松澤","GK"],[30,"西丸 道人","西丸","FW"],
+ [33,"林 彰洋","林","GK"],[34,"古屋 歩夢","古屋","FW"],[37,"杉山 耀建","杉山","MF"],[40,"安野 匠","安野","FW"],
+ [41,"髙橋 一平","髙橋","GK"],[42,"石井 隼太","石井","DF"],[44,"井上 詩音","井上","DF"],[47,"荒木 駿太","荒木","FW"],
+ [55,"韓 浩康","韓","DF"],[77,"尾川 丈","尾川","MF"],[80,"浅倉 廉","浅倉","MF"]
+];
+const SEED_LOAN = [["梅田 陸空","梅田","FC大阪"],["菅原 龍之助","菅原","FC大阪"],["知念 哲矢","知念","栃木シティ"],
+ ["工藤 真人","工藤","高知ユナイテッドSC"],["グスタボ","グスタボ","ボタフォゴPB"]];
+const SEED_SEASON = "2026/27";
+
+// ---- フォーメーション [ポジション, x%, y%]（上が攻撃） ----
+const FORM = {
+ "4-4-2":[["GK",50,91],["DF",14,74],["DF",38,77],["DF",62,77],["DF",86,74],["MF",14,50],["MF",38,53],["MF",62,53],["MF",86,50],["FW",36,22],["FW",64,22]],
+ "4-3-3":[["GK",50,91],["DF",14,74],["DF",38,77],["DF",62,77],["DF",86,74],["MF",28,52],["MF",50,56],["MF",72,52],["FW",17,25],["FW",50,17],["FW",83,25]],
+ "4-2-3-1":[["GK",50,91],["DF",14,74],["DF",38,77],["DF",62,77],["DF",86,74],["MF",36,60],["MF",64,60],["MF",18,40],["MF",50,37],["MF",82,40],["FW",50,16]],
+ "4-1-4-1":[["GK",50,91],["DF",14,74],["DF",38,77],["DF",62,77],["DF",86,74],["MF",50,62],["MF",14,42],["MF",38,45],["MF",62,45],["MF",86,42],["FW",50,16]],
+ "3-5-2":[["GK",50,91],["DF",25,76],["DF",50,79],["DF",75,76],["MF",9,50],["MF",30,56],["MF",50,47],["MF",70,56],["MF",91,50],["FW",36,22],["FW",64,22]],
+ "3-4-3":[["GK",50,91],["DF",25,76],["DF",50,79],["DF",75,76],["MF",14,52],["MF",38,55],["MF",62,55],["MF",86,52],["FW",18,25],["FW",50,17],["FW",82,25]]
+};
+const POS = ["GK","DF","MF","FW"];
+const BENCH_N = 9;
+const KEY = "vegalta-companion:v1";
+
+// ---- 状態 ----
+let uid = 0;
+const newId = () => "p" + Date.now().toString(36) + (uid++);
+function seedSeason(){
+  const players = SEED_2026.map(([no,name,short,pos]) => ({id:newId(),no,name,short,pos,loan:""}));
+  SEED_LOAN.forEach(([name,short,loan]) => players.push({id:newId(),no:"",name,short,pos:"MF",loan}));
+  return players;
+}
+function freshLineup(){ return {formation:"4-4-2", slots:{}, bench:[], opponent:"", date:""}; }
+let S = load() || {mode:"home", tab:"roster", season:SEED_SEASON, seasons:{[SEED_SEASON]:seedSeason()}, lineups:{[SEED_SEASON]:freshLineup()}};
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)); }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+const players = () => S.seasons[S.season];
+const lineup = () => S.lineups[S.season] || (S.lineups[S.season] = freshLineup());
+const byId = id => players().find(p => p.id === id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = id => document.getElementById(id);
+
+// ---- 描画 ----
+let query = "";
+function render(){
+  document.body.dataset.mode = S.mode;
+  document.querySelector('meta[name=theme-color]').content = S.mode==="away" ? "#f3f1ea" : S.mode==="dazn" ? "#050505" : "#0d0d0d";
+  $("seasonBtn").textContent = S.season + " ▾";
+  document.querySelectorAll("#modes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === S.mode));
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.t === S.tab));
+  if(S.tab === "roster") renderRoster(); else renderLineup();
+  save();
+}
+
+function renderRoster(){
+  const q = query.trim();
+  const list = players().filter(p => !q || (p.name + p.short + p.no + p.loan).includes(q));
+  const active = list.filter(p => !p.loan), loaned = list.filter(p => p.loan);
+  let h = `<input class="search" id="q" type="search" placeholder="名前・背番号で探す" value="${esc(query)}">`;
+  POS.forEach(pos => {
+    const g = active.filter(p => p.pos === pos).sort((a,b) => (+a.no||999) - (+b.no||999));
+    if(!g.length) return;
+    h += `<section class="group"><h2>${{GK:"GOALKEEPER",DF:"DEFENDER",MF:"MIDFIELDER",FW:"FORWARD"}[pos]}</h2>${g.map(rowHtml).join("")}</section>`;
+  });
+  if(loaned.length) h += `<section class="group"><h2>期限付き移籍中</h2>${loaned.map(rowHtml).join("")}</section>`;
+  if(!list.length) h += `<div class="empty-msg">該当する選手がいません</div>`;
+  h += `<div class="bar"><button class="btn" id="addP">＋ 選手を追加</button></div>`;
+  $("main").innerHTML = h;
+  const qi = $("q");
+  qi.oninput = () => { query = qi.value; const pos = qi.selectionStart; renderRoster(); const n = $("q"); n.focus(); n.setSelectionRange(pos,pos); };
+  $("addP").onclick = () => editPlayer(null);
+  document.querySelectorAll("[data-pid]").forEach(b => b.onclick = () => editPlayer(b.dataset.pid));
+}
+function rowHtml(p){
+  return `<button class="row" data-pid="${p.id}"><span class="no">${esc(p.no) || "–"}</span>
+    <span><div class="nm">${esc(p.name)}</div><div class="en">${p.pos}</div></span>
+    ${p.loan ? `<span class="loan">${esc(p.loan)}</span>` : ""}</button>`;
+}
+
+function renderLineup(){
+  const L = lineup(), slots = FORM[L.formation];
+  let h = `<div class="meta">
+    <select id="form">${Object.keys(FORM).map(f => `<option ${f===L.formation?"selected":""}>${f}</option>`).join("")}</select>
+    <input id="opp" placeholder="対戦相手" value="${esc(L.opponent)}">
+  </div><div class="pitch"><div class="box t"></div><div class="box b"></div>`;
+  slots.forEach(([pos,x,y],i) => {
+    const p = byId(L.slots[i]);
+    h += `<button class="slot ${p?"":"empty"}" data-slot="${i}" style="left:${x}%;top:${y}%">
+      <div class="c">${p ? esc(p.no) : pos}</div><div class="n">${p ? esc(p.short || p.name) : "&nbsp;"}</div></button>`;
+  });
+  h += `</div><h3>ベンチ</h3><div class="bench">`;
+  for(let i=0;i<BENCH_N;i++){
+    const p = byId(L.bench[i]);
+    h += p ? `<button data-bench="${i}"><b>${esc(p.no)}</b>${esc(p.short || p.name)}</button>`
+           : `<button class="empty" data-bench="${i}">＋</button>`;
+  }
+  h += `</div><div class="bar"><button class="btn ghost" id="clr">クリア</button><button class="btn" id="share">テキストで共有</button></div>`;
+  $("main").innerHTML = h;
+  $("form").onchange = e => { L.formation = e.target.value; L.slots = {}; render(); };
+  $("opp").oninput = e => { L.opponent = e.target.value; save(); };
+  document.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => pick(+b.dataset.slot, null));
+  document.querySelectorAll("[data-bench]").forEach(b => b.onclick = () => pick(null, +b.dataset.bench));
+  $("clr").onclick = () => { if(confirm("スタメンとベンチをクリアしますか？")){ L.slots = {}; L.bench = []; render(); } };
+  $("share").onclick = shareText;
+}
+
+// ---- シート ----
+function openSheet(html){ $("sheet").innerHTML = html; $("sheet").classList.add("on"); $("veil").classList.add("on"); $("sheet").scrollTop = 0; }
+function closeSheet(){ $("sheet").classList.remove("on"); $("veil").classList.remove("on"); }
+$("veil").onclick = closeSheet;
+
+function pick(slot, bench){
+  const L = lineup(), slots = FORM[L.formation];
+  const cur = slot !== null ? L.slots[slot] : L.bench[bench];
+  const used = new Set([...Object.values(L.slots), ...L.bench]);
+  const want = slot !== null ? slots[slot][0] : null;
+  const pool = players().filter(p => !p.loan && (!used.has(p.id) || p.id === cur));
+  const order = want ? [want, ...POS.filter(x => x !== want)] : POS;
+  let h = `<h2>${slot !== null ? `スタメン（${want}）` : "ベンチ"}を選ぶ</h2>`;
+  order.forEach(pos => {
+    const g = pool.filter(p => p.pos === pos).sort((a,b) => (+a.no||999) - (+b.no||999));
+    if(g.length) h += `<section class="group"><h2>${pos}</h2>${g.map(p => `<button class="row" data-pick="${p.id}"><span class="no">${esc(p.no)||"–"}</span><span class="nm">${esc(p.name)}</span></button>`).join("")}</section>`;
+  });
+  if(cur) h += `<div class="bar"><button class="btn danger" id="rm">外す</button></div>`;
+  openSheet(h);
+  document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { set(b.dataset.pick); });
+  if(cur) $("rm").onclick = () => set(null);
+  function set(id){
+    if(slot !== null){ if(id) L.slots[slot] = id; else delete L.slots[slot]; }
+    else { if(id) L.bench[bench] = id; else L.bench[bench] = undefined; L.bench = Array.from(L.bench, x => x); }
+    closeSheet(); render();
+  }
+}
+
+function editPlayer(id){
+  const p = id ? byId(id) : {no:"",name:"",short:"",pos:"MF",loan:""};
+  openSheet(`<h2>${id ? "選手を編集" : "選手を追加"}</h2>
+    <label class="field"><span>背番号</span><input id="e_no" inputmode="numeric" value="${esc(p.no)}"></label>
+    <label class="field"><span>名前（姓と名の間は空白）</span><input id="e_name" value="${esc(p.name)}"></label>
+    <label class="field"><span>ピッチ上の表示名（空なら名前）</span><input id="e_short" value="${esc(p.short)}"></label>
+    <label class="field"><span>ポジション</span><select id="e_pos">${POS.map(x => `<option ${x===p.pos?"selected":""}>${x}</option>`).join("")}</select></label>
+    <label class="field"><span>期限付き移籍先（いなければ空）</span><input id="e_loan" value="${esc(p.loan)}"></label>
+    <div class="bar"><button class="btn ghost" id="e_cancel">キャンセル</button><button class="btn" id="e_ok">保存</button></div>
+    ${id ? `<div class="bar"><button class="btn danger" id="e_del">この選手を削除</button></div>` : ""}`);
+  $("e_cancel").onclick = closeSheet;
+  $("e_ok").onclick = () => {
+    const name = $("e_name").value.trim();
+    if(!name){ $("e_name").focus(); return; }
+    const v = {no:$("e_no").value.trim(), name, short:$("e_short").value.trim() || name.split(/\s+/)[0], pos:$("e_pos").value, loan:$("e_loan").value.trim()};
+    if(id) Object.assign(p, v); else players().push({id:newId(), ...v});
+    closeSheet(); render();
+  };
+  if(id) $("e_del").onclick = () => {
+    if(!confirm(`${p.name} を削除しますか？`)) return;
+    S.seasons[S.season] = players().filter(x => x.id !== id);
+    const L = lineup();
+    Object.keys(L.slots).forEach(k => { if(L.slots[k] === id) delete L.slots[k]; });
+    L.bench = L.bench.map(x => x === id ? undefined : x);
+    closeSheet(); render();
+  };
+}
+
+// ---- シーズン ----
+$("seasonBtn").onclick = () => {
+  const names = Object.keys(S.seasons).sort().reverse();
+  openSheet(`<h2>シーズン</h2>
+    ${names.map(n => `<button class="row" data-season="${esc(n)}"><span class="nm">${esc(n)}</span>${n===S.season?'<span class="loan">表示中</span>':""}</button>`).join("")}
+    <div class="bar"><button class="btn" id="newSeason">新シーズンを作る</button></div>
+    <p class="note">新シーズンは、いま表示中のシーズンの選手をコピーして作ります（期限付き移籍は引き継ぎません）。そのあと移籍・背番号の変更を名鑑で直してください。</p>
+    <h3>データ</h3>
+    <div class="bar"><button class="btn ghost" id="exp">書き出し</button><button class="btn ghost" id="imp">読み込み</button></div>
+    <div class="bar"><button class="btn danger" id="reset">${esc(S.season)} を初期データに戻す</button></div>`);
+  document.querySelectorAll("[data-season]").forEach(b => b.onclick = () => { S.season = b.dataset.season; closeSheet(); render(); });
+  $("newSeason").onclick = () => {
+    const name = (prompt("新しいシーズン名（例：2027）", "") || "").trim();
+    if(!name) return;
+    if(S.seasons[name]){ alert("同じ名前のシーズンがあります"); return; }
+    S.seasons[name] = players().filter(p => !p.loan).map(p => ({...p, id:newId()}));
+    S.lineups[name] = freshLineup(); S.season = name; closeSheet(); render();
+  };
+  $("exp").onclick = exportData;
+  $("imp").onclick = importData;
+  $("reset").onclick = () => {
+    if(S.season !== SEED_SEASON){ alert("初期データがあるのは " + SEED_SEASON + " だけです"); return; }
+    if(!confirm("この選手データを初期データに戻します。編集内容は消えます。")) return;
+    S.seasons[S.season] = seedSeason(); S.lineups[S.season] = freshLineup(); closeSheet(); render();
+  };
+};
+async function exportData(){
+  const text = JSON.stringify({seasons:S.seasons, lineups:S.lineups});
+  try{
+    if(navigator.share){ await navigator.share({title:"ベガ観戦のお供 データ", text}); return; }
+    await navigator.clipboard.writeText(text); alert("データをコピーしました");
+  }catch(e){ prompt("コピーして保管してください", text); }
+}
+function importData(){
+  const text = prompt("書き出したデータを貼り付けてください");
+  if(!text) return;
+  try{
+    const d = JSON.parse(text);
+    if(!d.seasons || typeof d.seasons !== "object") throw 0;
+    if(!confirm("いまのデータを置き換えます。よろしいですか？")) return;
+    S.seasons = d.seasons; S.lineups = d.lineups || {};
+    if(!S.seasons[S.season]) S.season = Object.keys(S.seasons).sort().reverse()[0];
+    closeSheet(); render();
+  }catch(e){ alert("読み込めませんでした"); }
+}
+
+// ---- 共有 ----
+function shareText(){
+  const L = lineup(), slots = FORM[L.formation];
+  const nm = id => { const p = byId(id); return p ? `${p.no} ${p.short || p.name}` : "未定"; };
+  const rows = slots.map(([pos],i) => `${pos} ${nm(L.slots[i])}`);
+  const bench = L.bench.filter(Boolean).map(nm).join("、") || "未定";
+  const text = `ベガルタ仙台 ${L.opponent ? "vs " + L.opponent : "スタメン"}（${L.formation}）\n${rows.join("\n")}\nベンチ: ${bench}`;
+  if(navigator.share) navigator.share({text}).catch(() => {});
+  else navigator.clipboard.writeText(text).then(() => alert("コピーしました"), () => prompt("コピーしてください", text));
+}
+
+// ---- 操作 ----
+document.querySelectorAll("#modes button").forEach(b => b.onclick = () => { S.mode = b.dataset.m; render(); });
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => { S.tab = b.dataset.t; window.scrollTo(0,0); render(); });
+render();
+</script>
+</body>
+</html>
