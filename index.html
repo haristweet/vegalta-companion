@@ -187,7 +187,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const $ = id => document.getElementById(id);
 
 // ---- 試合データ（公式サイトの試合記録から作った matches.json）----
-const APP_VER = "0.2.0";
+const APP_VER = "0.2.1";
 const DATA_KEY = "vegalta-companion:matches";
 let M = (() => { try{ return JSON.parse(localStorage.getItem(DATA_KEY)); }catch(e){ return null; } })();
 fetch("matches.json", {cache:"no-cache"}).then(r => r.ok ? r.json() : null).then(d => {
@@ -404,8 +404,9 @@ function loadLineup(g){
   const slots = FORM[L.formation];
   L.slots = {}; L.bench = [];
   const st = T.start.map(q => ({q, p: find(q)})), used = new Set();
-  // 同じポジションの枠から順に入れ、入りきらない選手は空いている枠へ
-  st.forEach(({q, p}) => { if(!p) return; const i = slots.findIndex(([pos], k) => pos === q.pos && !(k in L.slots)); if(i >= 0){ L.slots[i] = p.id; used.add(p.id); } });
+  // 公式記録は同じポジションの中で右から順に並んでいるので、右側の枠から入れる。入りきらない選手は空いている枠へ
+  const rightFirst = pos => slots.map((s, k) => [s, k]).filter(([[sp], k]) => sp === pos && !(k in L.slots)).sort((a, b) => b[0][1] - a[0][1]);
+  st.forEach(({q, p}) => { if(!p) return; const c = rightFirst(q.pos)[0]; if(c){ L.slots[c[1]] = p.id; used.add(p.id); } });
   st.forEach(({p}) => { if(!p || used.has(p.id)) return; const i = slots.findIndex((_, k) => !(k in L.slots)); if(i >= 0){ L.slots[i] = p.id; used.add(p.id); } });
   T.bench.slice(0, BENCH_N).forEach(q => { const p = find(q); if(p) L.bench.push(p.id); });
   closeSheet(); S.tab = "lineup"; window.scrollTo(0,0); render();
