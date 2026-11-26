@@ -162,6 +162,8 @@ const FORM = {
  "4-2-3-1":[["GK",50,91],["DF",14,74],["DF",38,77],["DF",62,77],["DF",86,74],["MF",36,60],["MF",64,60],["MF",18,40],["MF",50,37],["MF",82,40],["FW",50,16]],
  "4-1-4-1":[["GK",50,91],["DF",14,74],["DF",38,77],["DF",62,77],["DF",86,74],["MF",50,62],["MF",14,42],["MF",38,45],["MF",62,45],["MF",86,42],["FW",50,16]],
  "3-5-2":[["GK",50,91],["DF",25,76],["DF",50,79],["DF",75,76],["MF",9,50],["MF",30,56],["MF",50,47],["MF",70,56],["MF",91,50],["FW",36,22],["FW",64,22]],
+ "3-1-4-2":[["GK",50,91],["DF",25,77],["DF",50,79],["DF",75,77],["MF",50,63],["MF",11,44],["MF",37,47],["MF",63,47],["MF",89,44],["FW",36,20],["FW",64,20]],
+ "3-4-2-1":[["GK",50,91],["DF",25,76],["DF",50,79],["DF",75,76],["MF",11,53],["MF",37,57],["MF",63,57],["MF",89,53],["MF",33,32],["MF",67,32],["FW",50,15]],
  "3-4-3":[["GK",50,91],["DF",25,76],["DF",50,79],["DF",75,76],["MF",14,52],["MF",38,55],["MF",62,55],["MF",86,52],["FW",18,25],["FW",50,17],["FW",82,25]]
 };
 const POS = ["GK","DF","MF","FW"];
@@ -187,7 +189,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const $ = id => document.getElementById(id);
 
 // ---- 試合データ（公式サイトの試合記録から作った matches.json）----
-const APP_VER = "0.2.1";
+const APP_VER = "0.2.2";
 const DATA_KEY = "vegalta-companion:matches";
 let M = (() => { try{ return JSON.parse(localStorage.getItem(DATA_KEY)); }catch(e){ return null; } })();
 fetch("matches.json", {cache:"no-cache"}).then(r => r.ok ? r.json() : null).then(d => {
@@ -305,7 +307,7 @@ function renderLineup(){
   }
   h += `</div><div class="bar"><button class="btn ghost" id="clr">クリア</button><button class="btn" id="share">テキストで共有</button></div>`;
   if(games().length) h += `<div class="bar"><button class="btn ghost" id="last">前の試合のメンバーを読み込む</button></div>
-    <p class="note">公式記録のスタメン・控えを並べます。フォーメーションは登録ポジションの人数から推測するので、違っていたら上で選び直してください。</p>`;
+    <p class="note">公式記録のスタメン・控えを、いま選んでいるフォーメーションに並べます（公式記録にはフォーメーションが載っていないため）。先に形を選んでから読み込んでください。</p>`;
   $("main").innerHTML = h;
   $("form").onchange = e => { L.formation = e.target.value; L.slots = {}; render(); };
   $("opp").oninput = e => { L.opponent = e.target.value; save(); };
@@ -398,16 +400,16 @@ function openGame(id){
 function loadLineup(g){
   const L = lineup(), T = g.lineup.for, miss = [];
   const find = q => { const p = players().find(p => !p.loan && samePlayer(p, q)); if(!p) miss.push(`${q.no} ${q.name}`); return p; };
-  const cnt = pos => T.start.filter(q => q.pos === pos).length;
-  const guess = `${cnt("DF")}-${cnt("MF")}-${cnt("FW")}`;
-  if(FORM[guess]) L.formation = guess;
+  // フォーメーションは公式記録に無いので、いま選んでいる形のまま並べる。
+  // 公式記録のスタメンは「GK → 後ろの列から前の列へ、各列は右から左」の順なので、
+  // 枠も同じ順（後ろの列から、列の中は右から）に並べて、先頭から順に入れる
   const slots = FORM[L.formation];
+  const order = slots.map((s, k) => ({k, x: s[1], y: s[2]})).sort((a, b) => b.y - a.y);
+  let line = 0;
+  order.forEach((o, n) => { if(n && order[n - 1].y - o.y > 6) line++; o.line = line; });
+  order.sort((a, b) => a.line - b.line || b.x - a.x);
   L.slots = {}; L.bench = [];
-  const st = T.start.map(q => ({q, p: find(q)})), used = new Set();
-  // 公式記録は同じポジションの中で右から順に並んでいるので、右側の枠から入れる。入りきらない選手は空いている枠へ
-  const rightFirst = pos => slots.map((s, k) => [s, k]).filter(([[sp], k]) => sp === pos && !(k in L.slots)).sort((a, b) => b[0][1] - a[0][1]);
-  st.forEach(({q, p}) => { if(!p) return; const c = rightFirst(q.pos)[0]; if(c){ L.slots[c[1]] = p.id; used.add(p.id); } });
-  st.forEach(({p}) => { if(!p || used.has(p.id)) return; const i = slots.findIndex((_, k) => !(k in L.slots)); if(i >= 0){ L.slots[i] = p.id; used.add(p.id); } });
+  T.start.forEach((q, n) => { const p = find(q); if(p && order[n]) L.slots[order[n].k] = p.id; });
   T.bench.slice(0, BENCH_N).forEach(q => { const p = find(q); if(p) L.bench.push(p.id); });
   closeSheet(); S.tab = "lineup"; window.scrollTo(0,0); render();
   if(miss.length) alert("名鑑にいない選手は入れていません：\n" + miss.join("\n"));
